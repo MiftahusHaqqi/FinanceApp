@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NewTransaction, Transaction, TransactionType } from "../database/db";
 import CategoryPicker from "../components/CategoryPicker";
 import { getCategoriesByType } from "../constants/categories";
@@ -93,7 +93,7 @@ export default function AddTransactionScreen({
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

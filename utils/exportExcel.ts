@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const FileSystem = require("expo-file-system");
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { utils, write } from "xlsx";
 import { Transaction } from "../database/db";
@@ -11,26 +10,15 @@ function toRupiah(amount: number): string {
   return new Intl.NumberFormat("id-ID").format(amount);
 }
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  const chunk = 8192;
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
-
 async function saveAndShare(
-  buffer: ArrayBuffer,
+  base64: string,
   fileName: string,
   dialogTitle: string
 ): Promise<void> {
-  const base64 = arrayBufferToBase64(buffer);
   const fileUri = String(FileSystem.cacheDirectory) + fileName;
 
   await FileSystem.writeAsStringAsync(fileUri, base64, {
-    encoding: "base64",
+    encoding: FileSystem.EncodingType.Base64,
   });
 
   const canShare = await Sharing.isAvailableAsync();
@@ -117,10 +105,10 @@ export async function exportToExcel(
     { wch: 16 },
   ];
 
-  const buffer: ArrayBuffer = write(wb, { type: "array", bookType: "xlsx" });
+  const base64: string = write(wb, { type: "base64", bookType: "xlsx" });
   const monthLabel = formatMonthLabel(year, month).replace(" ", "_");
   await saveAndShare(
-    buffer,
+    base64,
     `Keuangan_${monthLabel}.xlsx`,
     `Export ${monthLabel}`
   );
@@ -162,6 +150,6 @@ export async function exportAllToExcel(
     { wch: 16 },
   ];
 
-  const buffer: ArrayBuffer = write(wb, { type: "array", bookType: "xlsx" });
-  await saveAndShare(buffer, "Semua_Transaksi.xlsx", "Export Semua Transaksi");
+  const base64: string = write(wb, { type: "base64", bookType: "xlsx" });
+  await saveAndShare(base64, "Semua_Transaksi.xlsx", "Export Semua Transaksi");
 }

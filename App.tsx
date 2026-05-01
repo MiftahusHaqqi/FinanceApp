@@ -3,6 +3,10 @@ import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text, View } from "react-native";
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { setupDatabase } from "./database/db";
 
 // ─── Screens ──────────────────────────────────────────────────────────────────
@@ -22,11 +26,8 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   );
 }
 
-export default function App() {
-  // Setup database sekali saat app pertama dibuka
-  useEffect(() => {
-    setupDatabase();
-  }, []);
+function AppTabs() {
+  const insets = useSafeAreaInsets();
 
   return (
     <NavigationContainer>
@@ -38,8 +39,8 @@ export default function App() {
             backgroundColor: "#fff",
             borderTopColor: "#F0F0F0",
             borderTopWidth: 1,
-            height: 60,
-            paddingBottom: 8,
+            height: 60 + insets.bottom,
+            paddingBottom: Math.max(insets.bottom, 8),
             paddingTop: 4,
           },
           tabBarActiveTintColor: "#6C5CE7",
@@ -92,5 +93,18 @@ export default function App() {
         />
       </Tab.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  // Setup database sekali saat app pertama dibuka
+  useEffect(() => {
+    setupDatabase();
+  }, []);
+
+  return (
+    <SafeAreaProvider>
+      <AppTabs />
+    </SafeAreaProvider>
   );
 }

@@ -6,9 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Modal,
-  SafeAreaView,
   RefreshControl,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   useTransactions,
   formatMonthLabel,
@@ -48,7 +48,7 @@ export default function DashboardScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
       {/* ── Header ── */}
       <View style={styles.header}>
         <View>

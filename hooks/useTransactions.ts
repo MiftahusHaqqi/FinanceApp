@@ -4,14 +4,17 @@ import {
   getTransactionsByMonth,
   getMonthlySummary,
   getExpenseByCategory,
+  getCategoryBudgets,
   insertTransaction,
   updateTransaction,
   deleteTransaction,
+  upsertCategoryBudget,
   setupDatabase,
   Transaction,
   NewTransaction,
   MonthlySummary,
   CategorySummary,
+  CategoryBudget,
 } from "../database/db";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -20,6 +23,7 @@ interface UseTransactionsReturn {
   transactions: Transaction[];
   monthlySummary: MonthlySummary;
   categoryBreakdown: CategorySummary[];
+  categoryBudgets: CategoryBudget[];
   isLoading: boolean;
 
   // Filter bulan aktif
@@ -31,6 +35,7 @@ interface UseTransactionsReturn {
   addTransaction: (data: NewTransaction) => Promise<void>;
   editTransaction: (id: number, data: NewTransaction) => Promise<void>;
   removeTransaction: (id: number) => Promise<void>;
+  saveCategoryBudget: (category: string, amount: number) => Promise<void>;
 
   // Refresh manual
   refresh: () => void;
@@ -50,6 +55,7 @@ export function useTransactions(): UseTransactionsReturn {
   const [categoryBreakdown, setCategoryBreakdown] = useState<CategorySummary[]>(
     []
   );
+  const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // ── Setup database sekali saat pertama kali ──────────────────────────────
@@ -64,10 +70,12 @@ export function useTransactions(): UseTransactionsReturn {
       const txs = getTransactionsByMonth(activeYear, activeMonth);
       const summary = getMonthlySummary(activeYear, activeMonth);
       const breakdown = getExpenseByCategory(activeYear, activeMonth);
+      const budgets = getCategoryBudgets(activeYear, activeMonth);
 
       setTransactions(txs);
       setMonthlySummary(summary);
       setCategoryBreakdown(breakdown);
+      setCategoryBudgets(budgets);
     } catch (error) {
       console.error("Error loading transactions:", error);
     } finally {
@@ -127,10 +135,24 @@ export function useTransactions(): UseTransactionsReturn {
     [loadData]
   );
 
+  const saveCategoryBudget = useCallback(
+    async (category: string, amount: number) => {
+      try {
+        upsertCategoryBudget(activeYear, activeMonth, category, amount);
+        loadData();
+      } catch (error) {
+        console.error("Error saving category budget:", error);
+        throw error;
+      }
+    },
+    [activeMonth, activeYear, loadData]
+  );
+
   return {
     transactions,
     monthlySummary,
     categoryBreakdown,
+    categoryBudgets,
     isLoading,
     activeYear,
     activeMonth,
@@ -138,6 +160,7 @@ export function useTransactions(): UseTransactionsReturn {
     addTransaction,
     editTransaction,
     removeTransaction,
+    saveCategoryBudget,
     refresh: loadData,
   };
 }

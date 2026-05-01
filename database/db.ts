@@ -32,6 +32,18 @@ export function setupDatabase(): void {
     )
   `);
 
+  database.execSync(`
+    CREATE TABLE IF NOT EXISTS category_budgets (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      year       INTEGER NOT NULL,
+      month      INTEGER NOT NULL,
+      category   TEXT NOT NULL,
+      amount     REAL NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+      UNIQUE(year, month, category)
+    )
+  `);
+
   console.log("✅ Database setup selesai");
 }
 
@@ -135,6 +147,11 @@ export interface CategorySummary {
   total: number;
 }
 
+export interface CategoryBudget {
+  category: string;
+  amount: number;
+}
+
 export function getExpenseByCategory(
   year: number,
   month: number
@@ -158,6 +175,45 @@ export function getExpenseByCategory(
     console.error("❌ getExpenseByCategory error:", e);
     return [];
   }
+}
+
+export function getCategoryBudgets(
+  year: number,
+  month: number
+): CategoryBudget[] {
+  try {
+    const rows = getDb().getAllSync(
+      `SELECT category, amount
+       FROM category_budgets
+       WHERE year = ? AND month = ?
+       ORDER BY category ASC`,
+      [year, month]
+    ) as any[];
+
+    return rows.map((row) => ({
+      category: String(row.category),
+      amount: Number(row.amount ?? 0),
+    }));
+  } catch (e) {
+    console.error("getCategoryBudgets error:", e);
+    return [];
+  }
+}
+
+export function upsertCategoryBudget(
+  year: number,
+  month: number,
+  category: string,
+  amount: number
+): void {
+  getDb().runSync(
+    `INSERT INTO category_budgets (year, month, category, amount, updated_at)
+     VALUES (?, ?, ?, ?, datetime('now','localtime'))
+     ON CONFLICT(year, month, category)
+     DO UPDATE SET amount = excluded.amount,
+                   updated_at = datetime('now','localtime')`,
+    [year, month, category, amount]
+  );
 }
 
 // ─── Hapus ────────────────────────────────────────────────────────────────────
