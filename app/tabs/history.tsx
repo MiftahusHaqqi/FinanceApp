@@ -49,6 +49,7 @@ export default function HistoryScreen() {
   const {
     transactions,
     isLoading,
+    allCategories,
     activeYear,
     activeMonth,
     setActiveMonth,
@@ -71,9 +72,10 @@ export default function HistoryScreen() {
 
   const filteredTransactions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-
     return transactions.filter((tx) => {
-      const category = getCategoryById(tx.category);
+      const category =
+        allCategories.find((c) => c.id === tx.category) ??
+        allCategories[allCategories.length - 1];
       const txDate = tx.date.substring(0, 10);
 
       const matchesSearch =
@@ -89,7 +91,14 @@ export default function HistoryScreen() {
 
       return matchesSearch && matchesType && matchesStart && matchesEnd;
     });
-  }, [endDate, searchQuery, startDate, transactions, typeFilter]);
+  }, [
+    allCategories,
+    endDate,
+    searchQuery,
+    startDate,
+    transactions,
+    typeFilter,
+  ]);
 
   const grouped = groupTransactionsByDate(filteredTransactions);
   const hasActiveFilter =

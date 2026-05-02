@@ -22,18 +22,17 @@ import {
   getCategoryById,
   CHART_COLORS,
 } from "../../constants/categories";
+import DonutChart from "../../components/DonutChart";
 
 const { width } = Dimensions.get("window");
 const BAR_MAX_WIDTH = width - 120;
-const EXPENSE_CATEGORIES = CATEGORIES.filter(
-  (category) => category.type === "expense" || category.type === "both"
-);
 
 export default function StatisticsScreen() {
   const {
     monthlySummary,
     categoryBreakdown,
     categoryBudgets,
+    allCategories,
     activeYear,
     activeMonth,
     setActiveMonth,
@@ -68,8 +67,11 @@ export default function StatisticsScreen() {
     activeMonth === new Date().getMonth() + 1;
 
   const maxExpense = categoryBreakdown[0]?.total ?? 1;
+  const expenseCategories = allCategories.filter(
+    (c) => c.type === "expense" || c.type === "both"
+  );
   const budgetRows = useMemo(() => {
-    return EXPENSE_CATEGORIES.map((category) => {
+    return expenseCategories.map((category) => {
       const spent =
         categoryBreakdown.find((item) => item.category === category.id)
           ?.total ?? 0;
@@ -78,7 +80,6 @@ export default function StatisticsScreen() {
         0;
       const pct = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
       const remaining = budget - spent;
-
       return {
         category,
         spent,
@@ -88,7 +89,7 @@ export default function StatisticsScreen() {
         isOver: budget > 0 && spent > budget,
       };
     });
-  }, [categoryBreakdown, categoryBudgets]);
+  }, [expenseCategories, categoryBreakdown, categoryBudgets]);
 
   const openBudgetModal = (category: Category, currentBudget: number) => {
     setSelectedBudgetCategory(category);
@@ -238,78 +239,30 @@ export default function StatisticsScreen() {
           ))}
         </View>
 
-        {/* ── Breakdown kategori ── */}
-        {categoryBreakdown.length === 0 ? (
+        {/* ── Empty state jika belum ada pengeluaran ── */}
+        {categoryBreakdown.length === 0 && (
           <View style={styles.empty}>
             <Text style={styles.emptyIcon}>📊</Text>
             <Text style={styles.emptyText}>Belum ada data pengeluaran</Text>
           </View>
-        ) : (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pengeluaran per Kategori</Text>
-
-            {categoryBreakdown.map((item, index) => {
-              const cat = getCategoryById(item.category);
-              const barWidth = (item.total / maxExpense) * BAR_MAX_WIDTH;
-              const color = CHART_COLORS[index % CHART_COLORS.length];
-              const pct =
-                monthlySummary.total_expense > 0
-                  ? ((item.total / monthlySummary.total_expense) * 100).toFixed(
-                      1
-                    )
-                  : "0";
-
-              return (
-                <View key={item.category} style={styles.barRow}>
-                  <View style={styles.barLabelRow}>
-                    <Text style={styles.barIcon}>{cat.icon}</Text>
-                    <Text style={styles.barLabel}>{cat.label}</Text>
-                    <Text style={styles.barPct}>{pct}%</Text>
-                    <Text style={styles.barVal}>
-                      {formatRupiah(item.total)}
-                    </Text>
-                  </View>
-                  <View style={styles.barBg}>
-                    <View
-                      style={[
-                        styles.barFill,
-                        { width: barWidth, backgroundColor: color },
-                      ]}
-                    />
-                  </View>
-                </View>
-              );
-            })}
-          </View>
         )}
 
-        {/* ── Legend donut ── */}
+        {/* ── Donut chart proporsi ── */}
         {categoryBreakdown.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Proporsi Pengeluaran</Text>
-            <View style={styles.legendWrap}>
-              {categoryBreakdown.map((item, index) => {
+            <DonutChart
+              total={monthlySummary.total_expense}
+              slices={categoryBreakdown.map((item, index) => {
                 const cat = getCategoryById(item.category);
-                const color = CHART_COLORS[index % CHART_COLORS.length];
-                const pct =
-                  monthlySummary.total_expense > 0
-                    ? (
-                        (item.total / monthlySummary.total_expense) *
-                        100
-                      ).toFixed(1)
-                    : "0";
-                return (
-                  <View key={item.category} style={styles.legendItem}>
-                    <View
-                      style={[styles.legendDot, { backgroundColor: color }]}
-                    />
-                    <Text style={styles.legendIcon}>{cat.icon}</Text>
-                    <Text style={styles.legendLabel}>{cat.label}</Text>
-                    <Text style={styles.legendPct}>{pct}%</Text>
-                  </View>
-                );
+                return {
+                  value: item.total,
+                  color: CHART_COLORS[index % CHART_COLORS.length],
+                  label: cat.label,
+                  icon: cat.icon,
+                };
               })}
-            </View>
+            />
           </View>
         )}
 

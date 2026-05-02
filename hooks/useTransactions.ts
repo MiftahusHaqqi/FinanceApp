@@ -5,6 +5,7 @@ import {
   getMonthlySummary,
   getExpenseByCategory,
   getCategoryBudgets,
+  getAllCustomCategories,
   insertTransaction,
   updateTransaction,
   deleteTransaction,
@@ -16,6 +17,7 @@ import {
   CategorySummary,
   CategoryBudget,
 } from "../database/db";
+import { DEFAULT_CATEGORIES, Category } from "../constants/categories";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface UseTransactionsReturn {
@@ -25,6 +27,8 @@ interface UseTransactionsReturn {
   categoryBreakdown: CategorySummary[];
   categoryBudgets: CategoryBudget[];
   isLoading: boolean;
+
+  allCategories: Category[];
 
   // Filter bulan aktif
   activeYear: number;
@@ -58,6 +62,8 @@ export function useTransactions(): UseTransactionsReturn {
   const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
+
   // ── Setup database sekali saat pertama kali ──────────────────────────────
   useEffect(() => {
     setupDatabase();
@@ -72,10 +78,17 @@ export function useTransactions(): UseTransactionsReturn {
       const breakdown = getExpenseByCategory(activeYear, activeMonth);
       const budgets = getCategoryBudgets(activeYear, activeMonth);
 
+      const customs = getAllCustomCategories().map((c) => ({
+        ...c,
+        custom: true as const,
+      }));
+      const cats = [...DEFAULT_CATEGORIES, ...customs];
+
       setTransactions(txs);
       setMonthlySummary(summary);
       setCategoryBreakdown(breakdown);
       setCategoryBudgets(budgets);
+      setAllCategories(cats);
     } catch (error) {
       console.error("Error loading transactions:", error);
     } finally {
@@ -153,6 +166,7 @@ export function useTransactions(): UseTransactionsReturn {
     monthlySummary,
     categoryBreakdown,
     categoryBudgets,
+    allCategories,
     isLoading,
     activeYear,
     activeMonth,

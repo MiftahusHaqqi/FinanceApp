@@ -1,27 +1,16 @@
-export type CategoryId =
-  | "food"
-  | "transport"
-  | "health"
-  | "entertainment"
-  | "shopping"
-  | "home"
-  | "education"
-  | "salary"
-  | "bonus"
-  | "investment"
-  | "other";
+export type CategoryId = string;
 
 export interface Category {
-  id: CategoryId;
+  id: string;
   label: string;
   icon: string;
   color: string;
   bg: string;
   type: "expense" | "income" | "both";
+  custom?: boolean;
 }
 
-export const CATEGORIES: Category[] = [
-  // ── Pengeluaran ──────────────────────────────────────────────────
+export const DEFAULT_CATEGORIES: Category[] = [
   {
     id: "food",
     label: "Makanan",
@@ -78,7 +67,6 @@ export const CATEGORIES: Category[] = [
     bg: "#E3F2FD",
     type: "expense",
   },
-  // ── Pemasukan ────────────────────────────────────────────────────
   {
     id: "salary",
     label: "Gaji",
@@ -103,7 +91,6 @@ export const CATEGORIES: Category[] = [
     bg: "#E0F2F1",
     type: "income",
   },
-  // ── Umum ─────────────────────────────────────────────────────────
   {
     id: "other",
     label: "Lainnya",
@@ -114,10 +101,15 @@ export const CATEGORIES: Category[] = [
   },
 ];
 
-// ─── Helper: ambil kategori berdasarkan id ────────────────────────────────────
+// ─── Tidak ada DB call di sini — hanya data statis ───────────────────────────
+
+export function getAllCategories(): Category[] {
+  return [...DEFAULT_CATEGORIES];
+}
+
 export function getCategoryById(id: string): Category {
   return (
-    CATEGORIES.find((c) => c.id === id) ?? {
+    DEFAULT_CATEGORIES.find((c) => c.id === id) ?? {
       id: "other",
       label: "Lainnya",
       icon: "📌",
@@ -128,12 +120,13 @@ export function getCategoryById(id: string): Category {
   );
 }
 
-// ─── Helper: ambil kategori berdasarkan tipe transaksi ────────────────────────
 export function getCategoriesByType(type: "income" | "expense"): Category[] {
-  return CATEGORIES.filter((c) => c.type === type || c.type === "both");
+  return DEFAULT_CATEGORIES.filter((c) => c.type === type || c.type === "both");
 }
 
-// ─── Warna chart untuk statistik ─────────────────────────────────────────────
+// Backward compatibility
+export const CATEGORIES = DEFAULT_CATEGORIES;
+
 export const CHART_COLORS = [
   "#6C5CE7",
   "#00B894",

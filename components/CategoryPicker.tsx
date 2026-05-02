@@ -6,21 +6,23 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
-import { getCategoriesByType } from "../constants/categories";
+import { getCategoriesByType, Category } from "../constants/categories";
 import { TransactionType } from "../database/db";
 
 interface CategoryPickerProps {
   type: TransactionType;
   selected: string;
   onSelect: (categoryId: string) => void;
+  categories?: Category[];
 }
 
 export default function CategoryPicker({
   type,
   selected,
   onSelect,
+  categories: categoriesProp,
 }: CategoryPickerProps) {
-  const categories = getCategoriesByType(type);
+  const categories = categoriesProp ?? getCategoriesByType(type);
 
   return (
     <ScrollView

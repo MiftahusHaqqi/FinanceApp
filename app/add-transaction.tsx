@@ -13,7 +13,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NewTransaction, Transaction, TransactionType } from "../database/db";
 import CategoryPicker from "../components/CategoryPicker";
-import { getCategoriesByType } from "../constants/categories";
+import { DEFAULT_CATEGORIES, Category } from "../constants/categories";
+import { getAllCustomCategories } from "../database/db";
 
 interface Props {
   onSave: (data: NewTransaction) => Promise<void>;
@@ -34,6 +35,8 @@ export default function AddTransactionScreen({
   const [note, setNote] = useState("");
   const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
   const [isSaving, setIsSaving] = useState(false);
+  const [allCategories, setAllCategories] =
+    useState<Category[]>(DEFAULT_CATEGORIES);
 
   // ── Isi form jika mode edit ────────────────────────────────────────────────
   useEffect(() => {
@@ -48,8 +51,21 @@ export default function AddTransactionScreen({
 
   // ── Reset kategori saat tipe berubah ──────────────────────────────────────
   useEffect(() => {
+    try {
+      const customs = getAllCustomCategories().map(
+        (c): Category => ({ ...c, custom: true })
+      );
+      setAllCategories([...DEFAULT_CATEGORIES, ...customs]);
+    } catch {
+      setAllCategories([...DEFAULT_CATEGORIES]);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isEdit) {
-      const firstCat = getCategoriesByType(type)[0];
+      const firstCat = allCategories.find(
+        (c) => c.type === type || c.type === "both"
+      );
       setCategory(firstCat?.id ?? "");
     }
   }, [type]);
@@ -154,6 +170,9 @@ export default function AddTransactionScreen({
             type={type}
             selected={category}
             onSelect={setCategory}
+            categories={allCategories.filter(
+              (c) => c.type === type || c.type === "both"
+            )}
           />
 
           {/* ── Catatan ── */}

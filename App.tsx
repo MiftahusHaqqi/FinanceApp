@@ -7,13 +7,16 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { setupDatabase } from "./database/db";
+import { executeRecurringTransactions, setupDatabase } from "./database/db";
 
 // ─── Screens ──────────────────────────────────────────────────────────────────
 import DashboardScreen from "./app/tabs/index";
 import HistoryScreen from "./app/tabs/history";
 import StatisticsScreen from "./app/tabs/statistics";
 import SettingsScreen from "./app/tabs/settings";
+
+import RecurringScreen from "./app/recurring";
+import CategoryManagerScreen from "./app/category-manager";
 
 const Tab = createBottomTabNavigator();
 
@@ -72,6 +75,26 @@ function AppTabs() {
           }}
         />
         <Tab.Screen
+          name="Recurring"
+          component={RecurringScreen}
+          options={{
+            tabBarLabel: "Rutin",
+            tabBarIcon: ({ focused }) => (
+              <TabIcon emoji="🔁" focused={focused} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Categories"
+          component={CategoryManagerScreen}
+          options={{
+            tabBarLabel: "Kategori",
+            tabBarIcon: ({ focused }) => (
+              <TabIcon emoji="🏷️" focused={focused} />
+            ),
+          }}
+        />
+        <Tab.Screen
           name="Statistics"
           component={StatisticsScreen}
           options={{
@@ -100,6 +123,10 @@ export default function App() {
   // Setup database sekali saat app pertama dibuka
   useEffect(() => {
     setupDatabase();
+    const count = executeRecurringTransactions();
+    if (count > 0) {
+      console.log(`Executed ${count} recurring transaction dijalankan.`);
+    }
   }, []);
 
   return (
