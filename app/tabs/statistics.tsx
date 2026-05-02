@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import {
   CHART_COLORS,
 } from "../../constants/categories";
 import DonutChart from "../../components/DonutChart";
+import { useFocusEffect } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 const BAR_MAX_WIDTH = width - 120;
@@ -37,6 +38,7 @@ export default function StatisticsScreen() {
     activeMonth,
     setActiveMonth,
     saveCategoryBudget,
+    refresh,
   } = useTransactions();
 
   const [selectedBudgetCategory, setSelectedBudgetCategory] =
@@ -114,6 +116,12 @@ export default function StatisticsScreen() {
       Alert.alert("Gagal", "Budget kategori belum bisa disimpan.");
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>

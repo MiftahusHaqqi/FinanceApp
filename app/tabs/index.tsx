@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import SummaryCard from "../../components/SummaryCard";
 import TransactionItem from "../../components/TransactionItem";
 import AddTransactionScreen from "../add-transaction";
 import { Transaction } from "../../database/db";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function DashboardScreen() {
   const {
@@ -46,6 +47,12 @@ export default function DashboardScreen() {
     setShowAdd(false);
     setEditItem(null);
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>

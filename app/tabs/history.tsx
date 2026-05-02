@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import {
 import TransactionItem from "../../components/TransactionItem";
 import AddTransactionScreen from "../add-transaction";
 import { Transaction, TransactionType } from "../../database/db";
+import { useFocusEffect } from "@react-navigation/native";
 import { getCategoryById } from "../../constants/categories";
 
 type TypeFilter = "all" | TransactionType;
@@ -69,6 +70,12 @@ export default function HistoryScreen() {
     useState<DateFilterTarget | null>(null);
   const [calendarYear, setCalendarYear] = useState(activeYear);
   const [calendarMonth, setCalendarMonth] = useState(activeMonth - 1);
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
   const filteredTransactions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();

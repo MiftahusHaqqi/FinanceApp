@@ -25,6 +25,7 @@ import { DEFAULT_CATEGORIES, Category } from "../constants/categories";
 import { getAllCustomCategories } from "../database/db";
 import { formatRupiah } from "../hooks/useTransactions";
 import CategoryPicker from "../components/CategoryPicker";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function RecurringScreen() {
   const [recurrings, setRecurrings] = useState<RecurringTransaction[]>([]);
@@ -44,9 +45,11 @@ export default function RecurringScreen() {
     setRecurrings(getAllRecurring());
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   useEffect(() => {
     try {

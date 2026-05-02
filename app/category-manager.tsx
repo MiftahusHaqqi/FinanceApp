@@ -19,6 +19,7 @@ import {
   NewCustomCategory,
 } from "../database/db";
 import { DEFAULT_CATEGORIES } from "../constants/categories";
+import { useFocusEffect } from "@react-navigation/native";
 
 // ─── Pilihan ikon ─────────────────────────────────────────────────────────────
 const ICON_OPTIONS = [
@@ -105,9 +106,11 @@ export default function CategoryManagerScreen() {
     setCustoms(getAllCustomCategories());
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   const resetForm = () => {
     setLabel("");
